@@ -4,7 +4,9 @@
 #  Copyright (c) 2010 Chad Woolley - The MIT License
 
 boxbuilder_debug=${boxbuilder_debug:-false}
-RVM_DIR=/usr/local
+
+RVM_PREFIX=/usr/local
+RVM_DIR=/usr/local/rvm
 
 if [[ $boxbuilder_debug = true ]]; then
   export PS4='+(${BASH_SOURCE}:${LINENO}): ${FUNCNAME[0]:+${FUNCNAME[0]}(): }'
@@ -129,7 +131,10 @@ setup() {
   else
     echo "boxbuilder_rvm_version               = undefined, will use default"
   fi
-
+  
+  if [[ -n $HOME/.bashrc ]]; then 
+    cp /etc/skel/.bashrc $HOME/
+  fi  
 }
 
 prerequisite_packages_redhat() {
@@ -245,11 +250,11 @@ install_rvm() {
   if [[ -s $RVM_DIR/scripts/rvm && ! -z $($RVM_DIR/bin/rvm --version | grep $boxbuilder_rvm_version) ]]; then
     echo "$_log_prefix  Not reinstalling RVM version $boxbuilder_rvm_version because it is already installed ..."
   else
-    sudo mkdir -p $RVM_DIR/src/
-    sudo rm -rf $RVM_DIR/src/rvm/
-    sudo git clone --depth 1 git://github.com/wayneeseguin/rvm.git $RVM_DIR/src/rvm
+    sudo mkdir -p $RVM_PREFIX/src/
+    sudo rm -rf $RVM_PREFIX/src/rvm/
+    sudo git clone --depth 1 git://github.com/wayneeseguin/rvm.git $RVM_PREFIX/src/rvm
     disable_error_checking # HACK - Latest stable RVM install is returning nonzero but no output.  Add ability to specify known good RVM version/tag.    
-    sudo $RVM_DIR/src/rvm/install
+    sudo $RVM_PREFIX/src/rvm/install
     enable_error_checking
 
     # HACK around bug in RVM latest-stable
@@ -280,14 +285,35 @@ enable_rvm() {
   echo "$_log_prefix  Finished enabling RVM in init file $init_file"
 }
 
+enable_root_rvm() {
+  echo "$_log_prefix  Enabling RVM in init file $init_file"
+  rvm_init="if [[ -s $RVM_DIR/scripts/rvm ]] ; then source $RVM_DIR/scripts/rvm ; fi"
+  if [[ -z $(grep '.rvm' $init_file) ]] ; then
+    sudo echo $rvm_init >> $init_file
+    echo "$_log_prefix  Added RVM line to $init_file"
+  else
+    echo "$_log_prefix  Not adding RVM line to $init_file because it already exists ..."
+  fi
+  if [[ ! -z $(sudo grep -e '.*&& return.*$' $init_file) ]] ; then
+    # mount proc to avoid error message from sed: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=559539
+    # sudo mount -t proc none /proc/  # comment for now, fails if proc already mounted
+    sudo sed -i'.bak' -e 's/^.*&& return.*$//' $init_file
+    echo "$_log_prefix  Removed '&& return' from $init_file"
+  else
+    echo "$_log_prefix  Not removing '&& return' from $init_file because it was not found ..."
+  fi
+  echo "$_log_prefix  Finished enabling RVM in init file $init_file"
+}
+
+
 install_rvm_ruby() {
   echo "$_log_prefix  Installing RVM default ruby: $boxbuilder_default_ruby"
-  _rvm_info_output=$($RVM_DIR/bin/rvm info)
+  _rvm_info_output=$($RVM_PREFIX/bin/rvm info)
   _rvm_info_output_first_line=$(echo "$_rvm_info_output" | head -n 1)
   if echo "$_rvm_info_output_first_line" | grep "$boxbuilder_default_ruby"; then
     echo "$_log_prefix  Not installing RVM Ruby $boxbuilder_default_ruby because it is already installed ..."
   else
-    sudo $RVM_DIR/bin/rvm install "$boxbuilder_default_ruby"
+    sudo $RVM_PREFIX/bin/rvm install "$boxbuilder_default_ruby"
     if [[ ! $? = 0 ]]; then # TODO: remove, unnecessary since error checking is not enabled
       echo "$_log_prefix  Error installing RVM default ruby"
       return 1
@@ -298,7 +324,7 @@ install_rvm_ruby() {
 
 set_rvm_default_ruby() {
   echo "$_log_prefix  Setting RVM default ruby: $boxbuilder_default_ruby"
-  sudo $RVM_DIR/bin/rvm --default use $boxbuilder_default_ruby
+  sudo $RVM_PREFIX/bin/rvm --default use $boxbuilder_default_ruby
   if [[ ! $? = 0 ]]; then # TODO: remove, unnecessary since error checking is not enabled
     # TODO: This manual check is only required because RVM can't be invoked without
     # disable_error_checking.  See http://www.pivotaltracker.com/story/show/5021131
@@ -319,6 +345,15 @@ setup_rvm() {
       enable_error_checking
     fi
   done
+  for init_file in /root/.bashrc
+  do
+    if [[ -e $init_file ]] ; then
+      disable_error_checking  # turn off return code checking for now, failing with output 'tput: unknown terminal "unknown"'
+      enable_root_rvm
+      enable_error_checking
+    fi
+  done
+
   install_rvm_ruby
   set_rvm_default_ruby
   echo "$_log_prefix  Reloading default RVM interpreter in this shell"
@@ -331,7 +366,10 @@ install_chef() {
   # TODO: Allow override if user wants to force reinstall with different boxbuilder_chef_gem_install_options
   # TODO: Split out specific var for user to override chef version, so it can be used for installed check
   if ! gem search -i '^chef$'; then
+    sudo -s
+    source $RVM_DIR/environments/default
     gem install chef $boxbuilder_chef_gem_install_options
+    exit
     echo "$_log_prefix  Finished installing Chef..."
   else
     echo "$_log_prefix  'chef' gem is already installed, not reinstalling..."
@@ -341,7 +379,7 @@ install_chef() {
 download_chef_repos() {
   echo "$_log_prefix  Downloading/updating Chef Repos..."
   if [ ! -e $boxbuilder_chef_dir ]; then
-    mkdir -p $boxbuilder_chef_dir
+    sudo mkdir -p $boxbuilder_chef_dir
   fi
   # TODO: handle branches, probably optionally comma delimited after repo URL
   for _boxbuilder_chef_repo in $boxbuilder_chef_repos
@@ -350,15 +388,15 @@ download_chef_repos() {
     _repo_path="$boxbuilder_chef_dir/${_name_dot_git%.*}"
     if [ ! -e $_repo_path ]; then
       echo "$_log_prefix  $_repo_path does not exist, cloning from $_boxbuilder_chef_repo ..."
-      git clone --recursive -- $_boxbuilder_chef_repo $_repo_path
+      sudo git clone --recursive -- $_boxbuilder_chef_repo $_repo_path
     else
       echo "$_log_prefix  $_repo_path already exists, pulling and updating ..."
       echo $_repo_path
       set +o nounset
       cd $_repo_path
       set -o nounset
-      git pull
-      git submodule update --init
+      sudo git pull
+      sudo git submodule update --init
       set +o nounset
       cd -
       set -o nounset

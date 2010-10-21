@@ -8,9 +8,11 @@ export boxbuilder_ami_instancetype=m1.large
 export boxbuilder_ami_prefix="built-by-boxbuilder"
 
 # Change RVM defaults
-export boxbuilder_rvm_version=ruby-1.9.2-p0
-export boxbuilder_default_ruby=ruby-1.9.2-p0
+export boxbuilder_rvm_version=1.9.2
+export boxbuilder_default_ruby=1.9.2
 
 
-# Export on commandline to override
-# boxbuilderrc_download_url=http://github.com/copernicus/boxbuilder/raw/master/boxbuilderrc_download
+# Custom build
+# export boxbuilderrc_download_url=http://github.com/copernicus/boxbuilder/raw/master/boxbuilderrc_download
+# wget http://github.com/copernicus/boxbuilder/raw/master/boxbuilder_bootstrap
+# chmod +x boxbuilder_bootstrap

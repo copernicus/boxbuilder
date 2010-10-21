@@ -287,9 +287,7 @@ enable_system_rvm() {
 
 install_rvm_ruby() {
   echo "$_log_prefix  Installing RVM default ruby: $boxbuilder_default_ruby"
-  _rvm_info_output=$($RVM_PREFIX/bin/rvm info)
-  _rvm_info_output_first_line=$(echo "$_rvm_info_output" | head -n 1)
-  if [[ ! -z echo "$_rvm_info_output_first_line" | grep "$boxbuilder_default_ruby" ]]; then
+  if [[ ! -z $($RVM_PREFIX/bin/rvm info | grep $boxbuilder_default_ruby) ]]; then
     echo "$_log_prefix  Not installing RVM Ruby $boxbuilder_default_ruby because it is already installed ..."
   else
     sudo $RVM_PREFIX/bin/rvm install "$boxbuilder_default_ruby"

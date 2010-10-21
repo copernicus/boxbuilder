@@ -10,9 +10,9 @@ export boxbuilder_ami_prefix="built-by-boxbuilder"
 # Change RVM defaults
 export boxbuilder_rvm_version=1.9.2
 export boxbuilder_default_ruby=1.9.2
-export boxbuilder_repo=git://github.com/copernicus/boxbuilder.git
 
 # Custom build
 # export boxbuilderrc_download_url=http://github.com/copernicus/boxbuilder/raw/master/boxbuilderrc_download
+# export boxbuilder_repo=git://github.com/copernicus/boxbuilder.git
 # wget http://github.com/copernicus/boxbuilder/raw/master/boxbuilder_bootstrap
 # chmod +x boxbuilder_bootstrap

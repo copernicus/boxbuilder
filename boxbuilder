@@ -244,7 +244,7 @@ install_rvm() {
   if [[ -s $RVM_DIR/environments/default ]]; then
     source $RVM_DIR/environments/default
   fi
-  if [[ -s $RVM_DIR/scripts/rvm && ! -z $($RVM_DIR/bin/rvm --version | grep $boxbuilder_rvm_version) ]]; then
+  if [[ -s $RVM_DIR/scripts/rvm && ! -z $($RVM_DIR/bin/rvm list | grep $boxbuilder_rvm_version) ]]; then
     echo "$_log_prefix  Not reinstalling RVM version $boxbuilder_rvm_version because it is already installed ..."
   else
     sudo mkdir -p $RVM_PREFIX/src/

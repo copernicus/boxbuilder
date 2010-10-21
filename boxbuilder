@@ -245,15 +245,15 @@ install_rvm() {
   if [[ -s $RVM_DIR/scripts/rvm && ! -z $($RVM_DIR/bin/rvm --version | grep $boxbuilder_rvm_version) ]]; then
     echo "$_log_prefix  Not reinstalling RVM version $boxbuilder_rvm_version because it is already installed ..."
   else
-    mkdir -p $RVM_DIR/src/
-    rm -rf $RVM_DIR/src/rvm/
-    git clone --depth 1 git://github.com/wayneeseguin/rvm.git $RVM_DIR/src/rvm
+    sudo mkdir -p $RVM_DIR/src/
+    sudo rm -rf $RVM_DIR/src/rvm/
+    sudo git clone --depth 1 git://github.com/wayneeseguin/rvm.git $RVM_DIR/src/rvm
     disable_error_checking # HACK - Latest stable RVM install is returning nonzero but no output.  Add ability to specify known good RVM version/tag.    
-    $RVM_DIR/src/rvm/install
+    sudo $RVM_DIR/src/rvm/install
     enable_error_checking
 
     # HACK around bug in RVM latest-stable
-    mkdir -p $RVM_DIR/gems/cache
+    sudo mkdir -p $RVM_DIR/gems/cache
     # END HACK
 
     echo "$_log_prefix  Finished installing RVM version $boxbuilder_rvm_version ..."
@@ -287,7 +287,7 @@ install_rvm_ruby() {
   if echo "$_rvm_info_output_first_line" | grep "$boxbuilder_default_ruby"; then
     echo "$_log_prefix  Not installing RVM Ruby $boxbuilder_default_ruby because it is already installed ..."
   else
-    $RVM_DIR/bin/rvm install "$boxbuilder_default_ruby"
+    sudo $RVM_DIR/bin/rvm install "$boxbuilder_default_ruby"
     if [[ ! $? = 0 ]]; then # TODO: remove, unnecessary since error checking is not enabled
       echo "$_log_prefix  Error installing RVM default ruby"
       return 1
@@ -298,7 +298,7 @@ install_rvm_ruby() {
 
 set_rvm_default_ruby() {
   echo "$_log_prefix  Setting RVM default ruby: $boxbuilder_default_ruby"
-  $RVM_DIR/bin/rvm --default use $boxbuilder_default_ruby
+  sudo $RVM_DIR/bin/rvm --default use $boxbuilder_default_ruby
   if [[ ! $? = 0 ]]; then # TODO: remove, unnecessary since error checking is not enabled
     # TODO: This manual check is only required because RVM can't be invoked without
     # disable_error_checking.  See http://www.pivotaltracker.com/story/show/5021131

@@ -399,6 +399,7 @@ run() {
   download_chef_repos
   create_chef_script
   run_chef
+  source $RVM_DIR/environments/default
   echo "$_log_prefix Finished and exiting successfully"
 }
 

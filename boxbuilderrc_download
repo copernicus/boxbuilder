@@ -16,3 +16,4 @@ export boxbuilder_default_ruby=1.9.2
 # export boxbuilderrc_download_url=http://github.com/copernicus/boxbuilder/raw/master/boxbuilderrc_download
 # wget http://github.com/copernicus/boxbuilder/raw/master/boxbuilder_bootstrap
 # chmod +x boxbuilder_bootstrap
+# export boxbuilder_default_ruby=1.9.2

@@ -108,7 +108,7 @@ setup() {
   boxbuilder_config=${boxbuilder_config:-'export boxbuilder_config_placeholder_from_boxbuilder=boxbuilder_config_placeholder_from_boxbuilder'}
   eval $boxbuilder_config
   boxbuilder_rvm_version=${boxbuilder_rvm_version:-}
-  boxbuilder_default_ruby=${boxbuilder_default:-"1.8.7-p174"}
+  boxbuilder_default_ruby=${boxbuilder_default_ruby:-}
   boxbuilder_chef_repos=${boxbuilder_chef_repos:?"Please set 'boxbuilder_chef_repos' to a space-delimited list of Chef Git repositories"}
   boxbuilder_chef_dir=${boxbuilder_chef_dir:-"$HOME/.chef"}
   boxbuilder_chef_config_path=${boxbuilder_chef_config_path:?"Please set 'boxbuilder_chef_config_path' to the path of the Chef config file"}

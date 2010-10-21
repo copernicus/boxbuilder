@@ -132,9 +132,6 @@ setup() {
     echo "boxbuilder_rvm_version               = undefined, will use default"
   fi
   
-  if [[ -n $HOME/.bashrc ]]; then 
-    cp /etc/skel/.bashrc $HOME/
-  fi  
 }
 
 prerequisite_packages_redhat() {
@@ -267,8 +264,10 @@ install_rvm() {
 
 enable_system_rvm() {
   echo "$_log_prefix  Enabling RVM in init file $init_file"
+  rvm_pre="export rvm_prefix=$RVM_PREFIX"
   rvm_init="if [[ -s $RVM_DIR/scripts/rvm ]] ; then source $RVM_DIR/scripts/rvm ; fi"
   if [[ -z $(grep '.rvm' $init_file) ]] ; then
+    sudo echo $rvm_init >> "$rvm_pre"
     sudo echo $rvm_init >> $init_file
     echo "$_log_prefix  Added RVM line to $init_file"
   else

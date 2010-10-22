@@ -10,9 +10,9 @@ export boxbuilder_default_ruby=1.9.2
 
 # Change Chef defaults
 export boxbuilder_chef_dir=/var/chef
-export boxbuilder_chef_repos="git://github.com/copernicus/cookbooks.git git://github.com/copernicus/boxbooks.git"
-export boxbuilder_chef_json_path="$boxbuilder_chef_dir/boxbooks/config/node_default.json"
-export boxbuilder_chef_config_path="$boxbuilder_chef_dir/boxbooks/config/solo_default.rb"
+export boxbuilder_chef_repos="git://github.com/copernicus/boxbooks_default.git"
+export boxbuilder_chef_json_path="$boxbuilder_chef_dir/boxbooks_default/config/node_default.json"
+export boxbuilder_chef_config_path="$boxbuilder_chef_dir/boxbooks_default/config/solo_default.rb"
 
 
 # Custom build process flow
